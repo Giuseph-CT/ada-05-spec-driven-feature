@@ -99,3 +99,14 @@ This log documents the AI pair-programming interactions, architectural decisions
   - Documented complete interaction and architectural history in `AI_USAGE_LOG.md`.
   - Updated `TASKS.md` with completion status for all tasks T-01 through T-06.
   - Verified green test suite and test coverage.
+
+---
+
+# AI Usage Log — ADA-06
+
+| Entrada | Etapa | Evidencia / Descripción |
+| :---: | :--- | :--- |
+| **1** | **MCP Configuration** | Se configuró el servidor `github-readonly` mediante un Fine-Grained PAT de mínimo privilegio limitado a `Giuseph-CT/ada-05-spec-driven-feature` con permisos excluyentes de lectura (`Contents`, `Issues`, `Pull requests`). El estudiante tomó la decisión de deshabilitar explícitamente cualquier toolset de escritura para garantizar el aislamiento operativo. |
+| **2** | **Repository Analysis** | El agente utilizó las herramientas `repository_read` y `issue_read` para inspeccionar la estructura del proyecto y leer el archivo `SPEC.md`. El estudiante validó manualmente que el agente identificara correctamente los componentes en capas (`cli`, `service`, `repository`) y la tasa de cobertura de pruebas inicial. |
+| **3** | **Issue / PR Analysis** | El agente detectó que la Issue #1 citaba una sección de `SPEC.md` inexistente y que el PR #2 introducía código muerto sin pruebas. El estudiante verificó ejecutando `pytest` localmente que la cobertura de pruebas efectivamente caía en la rama del PR #2, confirmando el hallazgo del agente. |
+| **4** | **Permission / Security Review** | Se evaluó el riesgo de *Prompt Injection* y fuga de credenciales. El estudiante inspeccionó el inventario de herramientas disponible en la sesión MCP, confirmando la ausencia total de capacidades de escritura (`create_issue`, `comment_pr`, etc.) y ratificó la coherencia entre el Token PAT, la política MCP y la autenticación. |
