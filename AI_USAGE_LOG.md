@@ -110,3 +110,41 @@ This log documents the AI pair-programming interactions, architectural decisions
 | **2** | **Repository Analysis** | El agente utilizó las herramientas `repository_read` y `issue_read` para inspeccionar la estructura del proyecto y leer el archivo `SPEC.md`. El estudiante validó manualmente que el agente identificara correctamente los componentes en capas (`cli`, `service`, `repository`) y la tasa de cobertura de pruebas inicial. |
 | **3** | **Issue / PR Analysis** | El agente detectó que la Issue #1 citaba una sección de `SPEC.md` inexistente y que el PR #2 introducía código muerto sin pruebas. El estudiante verificó ejecutando `pytest` localmente que la cobertura de pruebas efectivamente caía en la rama del PR #2, confirmando el hallazgo del agente. |
 | **4** | **Permission / Security Review** | Se evaluó el riesgo de *Prompt Injection* y fuga de credenciales. El estudiante inspeccionó el inventario de herramientas disponible en la sesión MCP, confirmando la ausencia total de capacidades de escritura (`create_issue`, `comment_pr`, etc.) y ratificó la coherencia entre el Token PAT, la política MCP y la autenticación. |
+
+---
+
+## AI Usage Log (ADA-07)
+
+### Stage 1: Workflow observation
+- **Prompt/Interacción:** Análisis manual guiado por IA del diff de la rama `fix/customer-search-validation`.
+- **Decisión Humana:** Se aceptó el orden de pasos (diff -> pytest -> clasificación -> reporte) y se descartó la auto-aprobación del PR.
+
+### Stage 2: Skill authoring
+- **Prompt/Interacción:** Ajuste del frontmatter y descripción de `SKILL.md`.
+- **Decisión Humana:** Se forzó el patrón de nombres con guiones medios (`reviewing-pull-requests`) para asegurar compatibilidad con el linter de VS Code.
+
+### Stage 3: Script/reference design
+- **Prompt/Interacción:** Separación de la lógica de evaluación y plantillas.
+- **Decisión Humana:** Se movió la guía de severidad a `references/severity_guide.md` y el checklist a `references/review_checklist.md` aplicando Progressive Disclosure para mantener compacto el `SKILL.md`.
+
+### Stage 4: Evaluation/refinement
+- **Prompt/Interacción:** Validación del artefacto `results/pr-readiness-review.md`.
+- **Decisión Humana:** Se verificó que `validate_review_report.py` retornara exit code 0 únicamente cuando las secciones estandarizadas estuvieran presentes.
+
+### Stage 5: Third-party audit
+- **Prompt/Interacción:** Inspección del script de validación determinista antes de su ejecución.
+- **Decisión Humana:** Se validó que el script fuera seguro, de solo lectura sobre el reporte local y sin llamadas de red o comandos de modificación.
+
+### Stage 6: Professional skill comparison
+- **Prompt/Interacción:** Comparación entre dar instrucciones generales vs encapsular know-how en una Agent Skill.
+- **Decisión Humana:** Se confirmó que separar triggers, scripts deterministas y conocimiento especializado en `references/` reduce sustancialmente las alucinaciones del LLM y garantiza reportes consistentes.
+
+
+# AI Usage Log (ADA-08)
+
+- **Auditoría inicial y Discoverability:** Detecté que el agente (Antigravity/Gemini) dedujo la lógica de negocio correctamente, pero falló en la ejecución operativa porque el uso del entorno virtual (`.venv`) era conocimiento tribal (implícito). Validé que esto era un punto de fricción crítico y decidí remediarlo convirtiéndolo en un script ejecutable.
+- **Diseño de AGENTS.md:** Al diseñar el contrato operativo, evité la tentación de que la IA generara un documento gigante. Rechacé incluir reglas de negocio o descripciones de clases en este archivo, limitándolo estrictamente a definir fuentes de verdad, límites (stop conditions) y comandos deterministas.
+- **Guardrail automatizado:** Tomé la regla en lenguaje natural "no dejes tests rotos" y "no modifiques archivos core" y la convertí en software mediante `scripts/check_repo_contract.py` y un git `pre-commit` hook. Esto elimina la dependencia en la "obediencia" del agente y la reemplaza por una barrera determinista.
+- **Ejecución AFTER:** Noté un cambio radical en el determinismo del agente. Al seguir el `GEMINI.md` (que funcionó como adaptador para crear un plan) y usar el `verify_repo.sh`, el agente completó el flujo sin un solo comando fallido, eliminando la fase de "ensayo y error" en la terminal.
+- **Evaluación final (Intervención humana):** Comprobé que un repositorio *agent-ready* no elimina al humano. Si un cambio requiere modificar el `ARCHITECTURE.md` o alterar la estructura de datos (ej. cambiar el almacenamiento in-memory a PostgreSQL), la decisión y validación de impacto sigue requiriendo criterio de ingeniería humano.
+- **CI / Shared Checks:** Decidí que el script `scripts/verify_repo.sh` fuera el único contrato ejecutable. Lo configuré para que lo use el agente localmente para su Definition of Done, un desarrollador humano antes de subir cambios, y GitHub Actions en la nube, garantizando simetría total.

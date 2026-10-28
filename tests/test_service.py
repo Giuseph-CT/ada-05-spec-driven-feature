@@ -51,6 +51,21 @@ def test_service_short_query_with_whitespace_raises_validation_error():
     assert str(exc_info.value) == "Search query must be at least 2 characters long."
 
 
+def test_service_query_exceeding_max_length_raises_validation_error():
+    service = CustomerService()
+    long_query = "a" * 51
+    with pytest.raises(ValidationError) as exc_info:
+        service.search(long_query)
+    assert str(exc_info.value) == "Search query exceeds maximum length of 50 characters."
+
+
+def test_service_query_at_max_length_is_valid():
+    service = CustomerService()
+    max_query = "a" * 50
+    results = service.search(max_query)
+    assert results == []
+
+
 def test_service_empty_query_raises_validation_error():
     service = CustomerService()
     with pytest.raises(ValidationError) as exc_info:

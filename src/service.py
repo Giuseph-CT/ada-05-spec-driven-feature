@@ -24,6 +24,9 @@ class CustomerService:
         if len(trimmed_query) < 2:
             raise ValidationError("Search query must be at least 2 characters long.")
 
+        if len(trimmed_query) > 50:
+            raise ValidationError("Search query exceeds maximum length of 50 characters.")
+
         # Cambio para solucionar el Issue #1: Validación de estado según SPEC.md
         if status is not None and status.upper() not in self.VALID_STATUSES:
             raise ValidationError(
